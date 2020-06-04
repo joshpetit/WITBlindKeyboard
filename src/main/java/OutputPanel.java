@@ -5,6 +5,7 @@ import java.awt.*;
 public class OutputPanel extends JPanel {
     private JLabel systemOutput;
     private JTextArea userOutput;
+    private boolean capitalize = false;
     final Font COMIC_SANS = new Font("Comic Sans", Font.BOLD, 30);
     public OutputPanel(){
         super(new GridBagLayout());
@@ -48,6 +49,7 @@ public class OutputPanel extends JPanel {
         systemOutput.setText("Type Usage Keys");
     }
 
+    //Convert to switch statement
     public void message(String message){
         if (message.equalsIgnoreCase("Backspace")){
             String current = userOutput.getText();
@@ -62,7 +64,11 @@ public class OutputPanel extends JPanel {
         else if( message.equalsIgnoreCase("Tab")){
             userOutput.append("\t");
         }
+        else if( message.equalsIgnoreCase("Capitalize")){
+            capitalize = capitalize ? false: true;
+        }
         else{
+            message = capitalize ? message.toUpperCase(): message;
             userOutput.append(message);
         }
         speak(message);
