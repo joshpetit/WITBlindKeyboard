@@ -2,14 +2,11 @@
 import marytts.LocalMaryInterface;
 import marytts.exceptions.MaryConfigurationException;
 import marytts.exceptions.SynthesisException;
-import marytts.util.data.audio.AudioPlayer;
-import org.apache.http.util.ByteArrayBuffer;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.util.concurrent.locks.Condition;
 
 public class OutputPanel extends JPanel {
     private JLabel systemOutput;
