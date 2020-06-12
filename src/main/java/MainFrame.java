@@ -1,4 +1,7 @@
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.plaf.BorderUIResource;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -21,6 +24,8 @@ public class MainFrame  extends JFrame {
     KeyListener setMap;
     //What Users Actually See
     OutputPanel outputPanel;
+    //When clicked re-initializes keyboard with new selections
+    JButton resetButton;
     //Contains the Key Code properties
     private static Properties keyCodeValues;
     //A Visual display of the buttons currently Being pressed (Unimplemented)
@@ -42,7 +47,16 @@ public class MainFrame  extends JFrame {
         mappedKeys = new HashMap<>();
         outputPanel = new OutputPanel();
 
+        resetButton = new JButton("Reset");
+        resetButton.setFocusable(false);
+        resetButton.addActionListener(e ->{
+            initKeyboard();
+        });
+
         GridBagConstraints gc = new GridBagConstraints();
+
+        add(resetButton, gc);
+
         gc.fill = GridBagConstraints.BOTH;
         gc.gridx = 0;
         gc.gridy = 0;
@@ -64,6 +78,7 @@ public class MainFrame  extends JFrame {
 //Initialization Block:  Creates and starts Keyboard based on User Selection
     public void initKeyboard(){
         resetMappedKeys();
+        buttonsDisplay.reset();
         outputPanel.resetMap();
         systemMessage("Type Usage Keys");
     }
@@ -133,7 +148,7 @@ public class MainFrame  extends JFrame {
     }
 
 //Translate Block: Getting KeyPair value from Properties
-    //TODO: Find a way around this boilerplate code
+    //TODO: Find a way around this redundant code
     public void checkPair(String key1, String key2){
         //Gets the Integer value for the passed in Strings.
         if (!key1.isEmpty() && !key2.isEmpty()){
@@ -204,7 +219,7 @@ public class MainFrame  extends JFrame {
         clipboard.setContents(stringSelection, null);
     }
 
-    //Class that Orchestrates the Key Pairs, Receives them nad uses checkPair to send to output
+    //Class that Orchestrates the Key Pairs, Receives them aad uses the MainFrame's checkPair method to send to output
     private class KeyListen implements KeyListener {
         String key1 = "", key2 = "";
 
@@ -226,7 +241,6 @@ public class MainFrame  extends JFrame {
                 checkPair(key1, key2);
             }
             buttonsDisplay.toggleOn(key);
-
         }
 
         @Override
@@ -310,6 +324,11 @@ class ButtonsDisplay extends JPanel
         buttonsList.getOrDefault(button, notFoundButton).toggleOff();
     }
 
+    public void reset(){
+        buttonsList.clear();
+        primaryButtonsPanel.removeAll();
+    }
+
     //The actual button, independent of most things
     private class Button extends JPanel{
         //The key of the Button
@@ -324,25 +343,26 @@ class ButtonsDisplay extends JPanel
         final int BUTTON_WIDTH = 90;
         public Button(String labelName, int num){
             super(new BorderLayout());
-            final Font comic_sans = new Font("Comic Sans", Font.BOLD, 25);
+            final Font COMIC_SANS = new Font("Comic Sans", Font.BOLD, 25);
+            final Font COMIC_SANS2 = new Font("Comic Sans", Font.PLAIN, 25);
             setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
             setBackground(BGCOLOR);
 
             keyLabel = new JLabel(labelName);
-            keyLabel.setFont(comic_sans);
+            keyLabel.setFont(COMIC_SANS);
             keyLabel.setHorizontalAlignment(SwingConstants.CENTER);
             keyLabel.setForeground(FGCOLOR);
             add(keyLabel, BorderLayout.CENTER);
 
             numberLabel = new JLabel("" + num);
-            numberLabel.setFont(comic_sans);
+            numberLabel.setFont(COMIC_SANS);
             numberLabel.setHorizontalAlignment(SwingConstants.CENTER);
             numberLabel.setForeground(FGCOLOR);
             add(numberLabel, BorderLayout.NORTH);
 
             possibilitiesLabel = new JLabel("-");
             possibilitiesLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            possibilitiesLabel.setFont(comic_sans);
+            possibilitiesLabel.setFont(COMIC_SANS2);
             possibilitiesLabel.setForeground(FGCOLOR);
             add(possibilitiesLabel, BorderLayout.SOUTH);
         }

@@ -6,16 +6,23 @@ import marytts.exceptions.SynthesisException;
 import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.Locale;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 public class OutputPanel extends JPanel {
     private JLabel systemOutput;
     private JTextArea userOutput;
+    private JButton toggleAudio;
+
     private boolean capitalize = false;
-    private LocalMaryInterface maryInterface;
-    Clip clip;
     private Thread speech;
-    private String lastMessage;
+    private boolean audioOn = true;
+    private String message = ".";
+    private BlockingQueue speechQueue;
 
     final Font COMIC_SANS = new Font("Comic Sans", Font.BOLD, 30);
     public OutputPanel(){
@@ -24,6 +31,16 @@ public class OutputPanel extends JPanel {
 
         systemOutput = new JLabel("Type Usage Keys");
         systemOutput.setFont(COMIC_SANS);
+
+        toggleAudio = new JButton("Toggle Audio Off");
+        toggleAudio.setFocusable(false);
+
+        toggleAudio.addActionListener(actionEvent -> {
+            audioOn = !audioOn;
+            String text = audioOn ?  "Toggle Audio Off" : "Toggle Audio On";
+            toggleAudio.setText(text);
+        });
+
         userOutput = new JTextArea();
         userOutput.setEnabled(false);
         userOutput.setEditable(false);
@@ -32,62 +49,63 @@ public class OutputPanel extends JPanel {
         userOutput.setColumns(30);
         userOutput.setDisabledTextColor(Color.BLACK);
 
+
         GridBagConstraints gc = new GridBagConstraints();
 
-        gc.anchor = GridBagConstraints.NORTH;
-        gc.gridx = 0;
-        gc.weighty = 1;
-        gc.gridy = 0;
-        add(systemOutput,  gc);
 
-        gc.anchor = GridBagConstraints.SOUTH;
+        gc.gridx = 0;
+        gc.gridy = 0;
+        gc.weightx = 2;
+        add(toggleAudio, gc);
+
+        gc.gridx = 0;
+        gc.gridy = 1;
+        gc.weighty= 1;
+        gc.weightx = 10;
+        add(systemOutput, gc);
+
         gc.fill = GridBagConstraints.BOTH;
         gc.gridx = 0;
-        gc.weightx= 200;
-        gc.weighty = 10;
-        gc.gridy = 1;
+        gc.gridy = 2;
+        gc.weightx= 1;
+        gc.weighty = 1;
         add(new JScrollPane(userOutput), gc);
     }
 
+    //Uses MarryTTS to generate audio, may need to create custom sounds.
     public void initSpeech(){
         try {
-            maryInterface = new LocalMaryInterface();
+            LocalMaryInterface maryInterface = new LocalMaryInterface();
+            speechQueue = new ArrayBlockingQueue<String>(1);
+            Clip clip = AudioSystem.getClip();
+            speech = new Thread(() -> {
+                try {
+                    while (audioOn) {
+                        AudioInputStream ais = maryInterface.generateAudio(this.message);
+                        clip.open(ais);
+                        clip.start();
+                        this.message = (String) speechQueue.take();
+                        clip.close();
+                    }
+                } catch (LineUnavailableException | IOException | SynthesisException | InterruptedException e) {
+                    e.printStackTrace();
+                }
 
-        } catch (MaryConfigurationException e) {
+            });
+        } catch (MaryConfigurationException | LineUnavailableException e) {
             e.printStackTrace();
         }
-    }
-
-    //Find a way to prevent the words spoken from tripping over each other
-    public void speak(String message){
-        if (clip != null && clip.isOpen()){
-            clip.close();
-            System.out.println("Due?");
-        }
-         speech = new Thread(() -> {
-            try {
-                AudioInputStream ais = maryInterface.generateAudio(message);
-                clip = AudioSystem.getClip();
-                clip.open(ais);
-                clip.start();
-                if (Thread.currentThread().isInterrupted()){
-                    clip.close();
-                }
-            } catch (LineUnavailableException e) {
-                e.printStackTrace();
-            } catch (SynthesisException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-
-            }
-
-        });
         speech.start();
-
     }
 
+    //Only speak if audio is on and the queue is empty (prevents sounds from playing over each other)
+    public void speak(String message){
+        if (audioOn && speechQueue.isEmpty()) {
+            speechQueue.add(message);
+        }
+
+    }
+    //Not much right now, but if output panel will be needed to reinitialize certain things
     public void resetMap(){
         systemOutput.setText("Type Usage Keys");
     }
@@ -114,14 +132,13 @@ public class OutputPanel extends JPanel {
             message = capitalize ? message.toUpperCase(): message;
             userOutput.append(message);
         }
-        //In the case of constant repeated letters
-            speak(message);
-        lastMessage = message;
+        speak(message);
     }
 
     public String getText(){ return userOutput.getText();}
 
     public void systemMessage(String message){systemOutput.setText(message);}
+
 
 
 
