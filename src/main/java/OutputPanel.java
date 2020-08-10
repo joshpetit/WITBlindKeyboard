@@ -1,15 +1,14 @@
-
 import marytts.LocalMaryInterface;
 import marytts.exceptions.MaryConfigurationException;
 import marytts.exceptions.SynthesisException;
 
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.*;
-import java.util.Locale;
+import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -22,7 +21,7 @@ public class OutputPanel extends JPanel {
     private Thread speech;
     private boolean audioOn = false;
     private String message = ".";
-    private BlockingQueue speechQueue;
+    private BlockingQueue<String> speechQueue;
 
     final Font COMIC_SANS = new Font("Comic Sans", Font.BOLD, 30);
     public OutputPanel(){
@@ -84,7 +83,7 @@ public class OutputPanel extends JPanel {
                         AudioInputStream ais = maryInterface.generateAudio(this.message);
                         clip.open(ais);
                         clip.start();
-                        this.message = (String) speechQueue.take();
+                        this.message = speechQueue.take();
                         clip.close();
                     }
                 } catch (LineUnavailableException | IOException | SynthesisException | InterruptedException e) {
@@ -143,6 +142,3 @@ public class OutputPanel extends JPanel {
 
 
 }
-
-
-
