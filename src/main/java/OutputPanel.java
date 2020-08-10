@@ -20,7 +20,7 @@ public class OutputPanel extends JPanel {
 
     private boolean capitalize = false;
     private Thread speech;
-    private boolean audioOn = true;
+    private boolean audioOn = false;
     private String message = ".";
     private BlockingQueue speechQueue;
 
@@ -32,12 +32,12 @@ public class OutputPanel extends JPanel {
         systemOutput = new JLabel("Type Usage Keys");
         systemOutput.setFont(COMIC_SANS);
 
-        toggleAudio = new JButton("Toggle Audio Off");
+        toggleAudio = new JButton("Toggle Audio " + (this.audioOn ? "Off" : "On"));
         toggleAudio.setFocusable(false);
 
         toggleAudio.addActionListener(actionEvent -> {
             audioOn = !audioOn;
-            String text = audioOn ?  "Toggle Audio Off" : "Toggle Audio On";
+            String text = "Toggle Audio " + (audioOn ?  "Off" : "On");
             toggleAudio.setText(text);
         });
 

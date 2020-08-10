@@ -38,7 +38,6 @@ public class MainFrame  extends JFrame {
         this.setSize(1000, 700);
         this.setLayout(new GridBagLayout());
         this.setExtendedState(MAXIMIZED_BOTH);
-
         keyCodeValues = new Properties();
         loadKeyCodeValues();
         //Adds the User's keyListener
@@ -47,7 +46,7 @@ public class MainFrame  extends JFrame {
         mappedKeys = new HashMap<>();
         outputPanel = new OutputPanel();
 
-        resetButton = new JButton("Reset");
+        resetButton = new JButton("Reset Usage Keys");
         resetButton.setFocusable(false);
         resetButton.addActionListener(e ->{
             initKeyboard();
@@ -293,7 +292,7 @@ class ButtonsDisplay extends JPanel
         buttonsList = new HashMap<>();
 
         add(primaryButtonsPanel, BorderLayout.CENTER);
-            add(notFoundButton, BorderLayout.SOUTH);
+        add(notFoundButton, BorderLayout.SOUTH);
     }
 
     //Sets the possibility based on a certain Button
